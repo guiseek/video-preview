@@ -5,10 +5,10 @@ export function loadVideo(
   src: string,
   ratio: number,
   size: number,
-  videoLoadProgress: VideoLoadProgressCallback
+  videoLoadProgress: VideoLoadProgressCallback = () => {}
 ) {
   return new Promise<VideoLoaded>((resolve, reject) => {
-    const video = create('video', {src})
+    const video = create('video', {src, crossOrigin: 'anonymous'})
     video.onerror = reject
 
     const thumbnails: string[] = []

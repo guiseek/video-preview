@@ -13,35 +13,54 @@ const updateProgress = (videoProgress: VideoLoadProgress) => {
   output.innerText = getProgress(videoProgress)
 }
 
-const input = create('input', {
-  type: 'file',
-  accept: 'video/mp4,video/mpeg',
-  onchange() {
-    const [file] = Array.from(input.files ?? [])
-    const src = URL.createObjectURL(file)
-    loadVideo(src, ratio, size, updateProgress)
-      .then(drawThumbs)
-      .then((timeline) => {
-        query('div.timeline').append(timeline)
-      })
-  },
-})
+const input = {
+  file: create('input', {
+    type: 'file',
+    accept: 'video/mp4,video/mpeg',
+    onchange() {
+      const [file] = Array.from(input.file.files ?? [])
+      const src = URL.createObjectURL(file)
+      loadVideo(src, ratio, size, updateProgress)
+        .then(drawThumbs)
+        .then((tl) => {
+          query('div.timeline').append(tl)
+          input.file.value = ''
+        })
+    },
+  }),
+  url: create('input', {
+    type: 'url',
+    pattern: `^.*\.(mp4)$`,
+    placeholder: 'Ex.: https://website.com/some-video.mp4',
+    oninput() {
+      if (input.url.validity.valid) {
+        loadVideo(input.url.value, ratio, size, updateProgress)
+          .then(drawThumbs)
+          .then((tl) => {
+            query('div.timeline').append(tl)
+            input.url.value = ''
+          })
+      }
+    },
+  }),
+}
 
-main.appendChild(input)
+const fieldset = create('fieldset')
+fieldset.append(...Object.values(input))
 
 const videos = ['web-standards-for-the-future.mp4']
 
 videos.map((innerText) => {
-  document.body.append(
+  fieldset.append(
     create('button', {
       innerText,
       onclick() {
         loadVideo(innerText, ratio, size, updateProgress)
           .then(drawThumbs)
-          .then((timeline) => {
-            query('div.timeline').append(timeline)
-          })
+          .then((tl) => query('div.timeline').append(tl))
       },
     })
   )
 })
+
+main.append(fieldset)
